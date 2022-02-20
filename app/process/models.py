@@ -48,8 +48,9 @@ class CodesModel(Document):
         default=lambda: GeneralHelpers.get_uuid(),
         unique=True
     )
+    user_id = StringField(required=True)
     code = StringField(required=True)
-    is_redeemed = BooleanField(required=True)
+    is_redeemed = BooleanField(default=False)
     date = DateTimeField(
         default=lambda: GeneralHelpers.get_datetime(),
     )

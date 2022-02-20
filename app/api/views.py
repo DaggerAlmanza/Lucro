@@ -1,13 +1,16 @@
 import logging
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, Header, UploadFile
 from fastapi.params import Form
 from fastapi.responses import JSONResponse
 
+from app.process.constants import API_KEY
 from app.process.exceptions import UserProcessError
 from app.process.handlers import (
     create_user_handler,
     delete_user_handler,
     edit_user_handler,
+    claim_codes_handler,
+    redeem_codes_handler,
     show_codes_handler,
     show_most_registered_products_handler,
     show_no_validate_image_handler,
@@ -145,27 +148,80 @@ async def upload_image(
     "/users",
     tags=["promo"],
     response_model=ResponseSerializer)
-async def show_registered_users() -> dict:
-    response = show_registered_users_handler()
-    return JSONResponse(content=response, status_code=200)
+async def show_registered_users(api_key: str = Header(None)) -> dict:
+    try:
+        if API_KEY != api_key:
+            raise UserProcessError(
+                "User no authorized",
+                401
+            )
+        response = show_registered_users_handler()
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
 
 
 @router.get(
     "/show-codes",
-    tags=["promo"],
+    tags=["campain"],
     response_model=ResponseSerializer)
-async def show_codes() -> dict:
-    response = show_codes_handler()
-    return JSONResponse(content=response, status_code=200)
+async def show_codes(api_key: str = Header(None)) -> dict:
+    try:
+        if API_KEY != api_key:
+            raise UserProcessError(
+                "User no authorized",
+                401
+            )
+        response = show_codes_handler()
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
 
 
 @router.get(
     "/show-products",
-    tags=["promo"],
+    tags=["campain"],
     response_model=ResponseSerializer)
-async def show_most_registered_products() -> dict:
-    response = show_most_registered_products_handler()
-    return JSONResponse(content=response, status_code=200)
+async def show_most_registered_products(api_key: str = Header(None)) -> dict:
+    try:
+        response = show_most_registered_products_handler()
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
+
 
 
 @router.get(
@@ -173,14 +229,101 @@ async def show_most_registered_products() -> dict:
     tags=["promo"],
     response_model=ResponseSerializer)
 async def show_user_score() -> dict:
-    response = show_user_score_handler()
-    return JSONResponse(content=response, status_code=200)
+    try:
+        response = show_user_score_handler()
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
+
 
 
 @router.get(
     "/show-no-validate-image",
-    tags=["user"],
+    tags=["campain"],
     response_model=ResponseSerializer)
 async def show_no_validate_image() -> dict:
-    response = show_no_validate_image_handler()
-    return JSONResponse(content=response, status_code=200)
+    try:
+
+        response = show_no_validate_image_handler()
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
+
+
+@router.get(
+    "/claim-codes/{quantity}",
+    tags=["promo"],
+    response_model=ResponseSerializer)
+async def claim_codes(quantity: int) -> dict:
+    """
+    - quantity: codes for redeeming
+
+    Args:
+        quantity (int): codes for redeeming
+
+    Returns:
+        dict: _description_
+    """
+
+    try:
+        response = claim_codes_handler(quantity)
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
+
+
+
+@router.get(
+    "/redeem-codes/{quantity}",
+    tags=["promo"],
+    response_model=ResponseSerializer)
+async def redeem_codes(quantity: int) -> dict:
+    try:
+        response = redeem_codes_handler(quantity)
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)

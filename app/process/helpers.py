@@ -14,6 +14,28 @@ class GeneralHelpers:
         return time
 
     @staticmethod
+    def get_date_from():
+        time = datetime.now().date()
+        return time
+
+    @staticmethod
+    def get_date_to():
+        """
+        Method for getting time
+        :return:
+        """
+        today = datetime.now()
+        today_year = today.year
+        today_month = today.month
+        today_day = today.day
+
+        time = datetime(today_year, today_month, today_day)
+
+        timestamp = datetime.timestamp(time) + 86400
+        time = datetime.fromtimestamp(timestamp)
+        return time
+
+    @staticmethod
     def get_iso_time():
         """
         Method for getting time

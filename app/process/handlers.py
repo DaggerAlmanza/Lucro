@@ -1,5 +1,8 @@
 from app.process.processes import (
     create_user_process,
+    claim_codes_process,
+    show_registered_users_process,
+    show_codes_process,
     upload_file_process,
     user_login_process,
     user_logout_process
@@ -38,11 +41,11 @@ def upload_file_handler(
 
 
 def show_registered_users_handler():
-    pass
+    return show_registered_users_process()
 
 
 def show_codes_handler():
-    pass
+    return show_codes_process()
 
 
 def show_most_registered_products_handler():
@@ -54,4 +57,12 @@ def show_user_score_handler():
 
 
 def show_no_validate_image_handler():
+    pass
+
+
+def claim_codes_handler(quantity: int):
+    return claim_codes_process(quantity)
+
+
+def redeem_codes_handler():
     pass
