@@ -4,7 +4,6 @@ from mongoengine import connect
 
 def connect_db() -> None:
     """
-
     :return: connect mongodb
     """
     connect(

@@ -43,3 +43,32 @@ class Queryset:
                 "user_id": user[0].identifier
             }
         }
+
+    @staticmethod
+    def register_image(
+        user_id: str,
+        product_name: str,
+        score: int,
+        is_checked: bool
+    ):
+        ImagesModel(
+            user_id=user_id,
+            product_name=product_name,
+            score=score,
+            is_checked=is_checked
+        ).save()
+
+    @staticmethod
+    def update_user_score(user_id: str, score: int) -> dict:
+        transaction = PointModel.objects(
+                user_id=user_id
+            )
+        if transaction.count() == 0:
+            PointModel(
+                user_id=user_id,
+                score=score
+            ).save()
+        else:
+            transaction = transaction.get(user_id=user_id)
+            transaction.score += score
+            transaction.save()

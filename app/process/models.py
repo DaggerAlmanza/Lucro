@@ -5,7 +5,6 @@ from mongoengine.fields import (
     EmbeddedDocument,
     EmbeddedDocumentListField,
     IntField,
-    ListField,
     StringField
 )
 
@@ -62,8 +61,9 @@ class ImagesModel(Document):
         unique=True
     )
     user_id = StringField(required=True)
+    product_name = StringField(required=True)
     score = IntField(required=True)
-    is_validated = BooleanField(required=True, default=True)
+    is_validated = BooleanField(default=True)
     is_checked = BooleanField(required=True)
     date = DateTimeField(
         default=lambda: GeneralHelpers.get_datetime(),
