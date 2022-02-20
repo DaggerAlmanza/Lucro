@@ -136,3 +136,36 @@ class Queryset:
         except Exception as e:
             print(str(e))
             return False
+
+    @staticmethod
+    def redeem_code(code: str):
+        code_obj = CodesModel.objects(code=code)
+        if code_obj == 0:
+            raise UserProcessError(
+                "This code does not exist",
+                404
+            )
+        code_obj = code_obj.get(code=code)
+        if code_obj.is_redeemed:
+            raise UserProcessError(
+                "This code was redeemed",
+                409
+            )
+        code_obj.is_redeemed = True
+        code_obj.save()
+        return {
+            "message": "this code was redeemed successfully"
+        }
+
+    @staticmethod
+    def show_user_score(user_id: str):
+        user = PointModel.objects(user_id=user_id)
+        if user.count() == 0:
+            raise UserProcessError(
+                "The user doesn't have any point",
+                404
+            )
+        user = user.get(user_id=user_id)
+        return {
+            "message": f"You have {user.score} point(s)"
+        }

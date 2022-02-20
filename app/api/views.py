@@ -223,7 +223,6 @@ async def show_most_registered_products(api_key: str = Header(None)) -> dict:
         return JSONResponse(content=response, status_code=500)
 
 
-
 @router.get(
     "/show-user-score",
     tags=["promo"],
@@ -305,14 +304,21 @@ async def claim_codes(quantity: int) -> dict:
         return JSONResponse(content=response, status_code=500)
 
 
-
 @router.get(
-    "/redeem-codes/{quantity}",
-    tags=["promo"],
+    "/redeem-codes/{code}",
+    tags=["campain"],
     response_model=ResponseSerializer)
-async def redeem_codes(quantity: int) -> dict:
+async def redeem_codes(
+    code: str,
+    api_key: str = Header(None)
+) -> dict:
     try:
-        response = redeem_codes_handler(quantity)
+        if API_KEY != api_key:
+            raise UserProcessError(
+                "User no authorized",
+                401
+            )
+        response = redeem_codes_handler(code)
         return JSONResponse(content=response, status_code=200)
     except UserProcessError as ue:
         logger.error(ue)

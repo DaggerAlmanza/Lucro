@@ -138,3 +138,16 @@ def save_codes(user_id: str, codes: list):
                 -1000
             )
 
+
+def redeem_codes_process(code: str):
+    return Queryset.redeem_code(code)
+
+
+def show_user_score_process():
+    if session_manager.get_login_status():
+        user_id: str = session_manager.get_user_id()
+        return Queryset.show_user_score(user_id)
+    raise UserProcessError(
+        "The user is not login",
+        401
+    )
