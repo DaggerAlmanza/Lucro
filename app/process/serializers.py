@@ -36,7 +36,6 @@ class ResponseSerializer(BaseModel):
     data: dict
     status: int
     message: str
-    data_today: date
 
     class Config:
         schema_extra = {

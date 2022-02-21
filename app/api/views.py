@@ -35,6 +35,19 @@ logger = logging.getLogger("router")
 
 @router.post("/login", tags=["session"], response_model=ResponseSerializer)
 async def login_user(user: UserLoginSerializer) -> dict:
+    """
+    El usuario inicia sesión
+    Args:
+        user (UserLoginSerializer):
+            email: str
+            password: str
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         response = user_login_handler(user.dict())
         return JSONResponse(content=response, status_code=200)
@@ -55,6 +68,15 @@ async def login_user(user: UserLoginSerializer) -> dict:
 
 @router.post("/logout", tags=["session"], response_model=ResponseSerializer)
 async def close_session() -> dict:
+    """
+    El usuario cierra sesión
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         response = user_closed_session_handler()
         return JSONResponse(content=response, status_code=200)
@@ -75,6 +97,22 @@ async def close_session() -> dict:
 
 @router.post("/create-user", tags=["user"], response_model=ResponseSerializer)
 async def create_user(user: UserSerializer) -> dict:
+    """
+    Creación de un usuario
+
+    Args:
+        user (UserSerializer):
+            fullname: str
+            identification: int
+            email: str
+            password: str
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         response = create_user_handler(user.dict())
         return JSONResponse(content=response, status_code=200)
@@ -98,6 +136,15 @@ async def create_user(user: UserSerializer) -> dict:
     tags=["promo"],
     response_model=ResponseSerializer)
 async def image_quantity_user() -> dict:
+    """
+    Oportunidades que le quedan al usuario para subir una foto en el día
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         response = image_quantity_user_handler()
         return JSONResponse(content=response, status_code=200)
@@ -116,23 +163,6 @@ async def image_quantity_user() -> dict:
         return JSONResponse(content=response, status_code=500)
 
 
-@router.put("/edit-user", tags=["user"], response_model=ResponseSerializer)
-async def edit_user(
-    user: UserSerializer,
-    number_id: int
-) -> dict:
-    response = edit_user_handler(user, number_id)
-    return JSONResponse(content=response, status_code=response.get("status"))
-
-
-@router.delete(
-    "/delete-user/{delete_id}",
-    tags=["user"],
-    response_model=ResponseSerializer)
-async def delete_user(delete_id: int) -> dict:
-    return delete_user_handler(delete_id)
-
-
 @router.post(
     "/verify-image",
     tags=["promo"],
@@ -142,6 +172,22 @@ async def upload_image(
     file: UploadFile,
     product_name: str = Form(...)
         ) -> dict:
+    """
+    Subir una foto para generar los putos
+
+    Args:
+        file (UploadFile): Archivo (imagen a subir)
+        product_name (str, optional): Nombre del producto
+
+    Raises:
+        UserProcessError: Error al subir la foto
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         extension: str = file.filename.split(".")[1].lower()
         extensions: list = ["png", "jpg", "jpeg"]
@@ -174,6 +220,21 @@ async def upload_image(
     tags=["campain"],
     response_model=ResponseSerializer)
 async def show_registered_users(api_key: str = Header(None)) -> dict:
+    """
+    Obtener los usuarios están registrados en la promoción
+
+    Args:
+        api_key (str, optional): Llave del administrador para el ingreso
+
+    Raises:
+        UserProcessError: Descripcion del error
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         if API_KEY != api_key:
             raise UserProcessError(
@@ -202,6 +263,21 @@ async def show_registered_users(api_key: str = Header(None)) -> dict:
     tags=["campain"],
     response_model=ResponseSerializer)
 async def show_codes(api_key: str = Header(None)) -> dict:
+    """
+    obtener los códigos se han generado y redimido
+
+    Args:
+        api_key (str, optional): Llave del administrador para el ingreso
+
+    Raises:
+        UserProcessError: Descripcion del error
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         if API_KEY != api_key:
             raise UserProcessError(
@@ -230,6 +306,18 @@ async def show_codes(api_key: str = Header(None)) -> dict:
     tags=["campain"],
     response_model=ResponseSerializer)
 async def show_most_registered_products(api_key: str = Header(None)) -> dict:
+    """
+    Obtenemos los 5 productos que más se están registrando
+
+    Args:
+        api_key (str, optional): Llave del administrador para el ingreso
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         response = show_most_registered_products_handler()
         return JSONResponse(content=response, status_code=200)
@@ -253,6 +341,15 @@ async def show_most_registered_products(api_key: str = Header(None)) -> dict:
     tags=["promo"],
     response_model=ResponseSerializer)
 async def show_user_score() -> dict:
+    """
+    Obtenemos los puntos del usuario
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         response = show_user_score_handler()
         return JSONResponse(content=response, status_code=200)
@@ -276,6 +373,21 @@ async def show_user_score() -> dict:
     tags=["campain"],
     response_model=ResponseSerializer)
 async def show_no_validate_image(api_key: str = Header(None)) -> dict:
+    """
+     Imágenes que se deben validar manualmente
+
+    Args:
+        api_key (str, optional): Llave del administrador para el ingreso
+
+    Raises:
+        UserProcessError: Descripción del error
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         if API_KEY != api_key:
             raise UserProcessError(
@@ -305,13 +417,16 @@ async def show_no_validate_image(api_key: str = Header(None)) -> dict:
     response_model=ResponseSerializer)
 async def claim_codes(quantity: int) -> dict:
     """
-    - quantity: codes for redeeming
+    - quantity: Codigos a redimir
 
     Args:
-        quantity (int): codes for redeeming
+        quantity (int): Codigos a redimir
 
     Returns:
-        dict: _description_
+        dict:
+            data: dict
+            status: int
+            message: str
     """
 
     try:
@@ -340,6 +455,22 @@ async def redeem_codes(
     code: str,
     api_key: str = Header(None)
 ) -> dict:
+    """
+    Redimir el bono en la tienda
+
+    Args:
+        code (str): Bono generado para redimir en la tienda
+        api_key (str, optional): Llave del administrador para el ingreso
+
+    Raises:
+        UserProcessError: Descripción del error
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         if API_KEY != api_key:
             raise UserProcessError(
@@ -372,6 +503,24 @@ async def validate_image(
     is_validated: bool,
     api_key: str = Header(None)
 ) -> dict:
+    """
+    
+
+    Args:
+        identifier (str): Cedula de ciudadania
+        is_validated (bool): Para validar la imagen y que los putos sean tomados,
+            de lo contrario se restan los putos
+        api_key (str, optional): Llave del administrador para el ingreso
+
+    Raises:
+        UserProcessError: Descripción del error
+
+    Returns:
+        dict:
+            data: dict
+            status: int
+            message: str
+    """
     try:
         if API_KEY != api_key:
             raise UserProcessError(
@@ -393,3 +542,20 @@ async def validate_image(
         logger.error(e)
         response = {"error": str(e)}
         return JSONResponse(content=response, status_code=500)
+
+
+@router.put("/edit-user", tags=["user"], response_model=ResponseSerializer)
+async def edit_user(
+    user: UserSerializer,
+    number_id: int
+) -> dict:
+    response = edit_user_handler(user, number_id)
+    return JSONResponse(content=response, status_code=response.get("status"))
+
+
+@router.delete(
+    "/delete-user/{delete_id}",
+    tags=["user"],
+    response_model=ResponseSerializer)
+async def delete_user(delete_id: int) -> dict:
+    return delete_user_handler(delete_id)
