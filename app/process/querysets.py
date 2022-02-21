@@ -1,5 +1,5 @@
 from app.process.helpers import GeneralHelpers
-from app.process.utils import generate_code
+from app.process.utils import generate_code, get_dict_from_list, sort_dict
 from .exceptions import (
     UserProcessError
 )
@@ -83,13 +83,14 @@ class Queryset:
             date__gte=date_from,
             date__lt=date_to
         )
-        if images_qty.count() < 5:
-            return True
-        return False
+        return images_qty.count()
 
     @staticmethod
     def show_user():
-        return UserModel.objects().count()
+        user_qty = UserModel.objects().count()
+        return {
+            "message": f"There are {user_qty} registered user(s)"
+        }
 
     @staticmethod
     def show_codes():
@@ -168,4 +169,67 @@ class Queryset:
         user = user.get(user_id=user_id)
         return {
             "message": f"You have {user.score} point(s)"
+        }
+
+    @staticmethod
+    def show_no_validate_image():
+        validate_images = ImagesModel.objects(is_checked=False)
+        if validate_images.count() == 0:
+            return {
+                "message": "There is not any image to be validated"
+            }
+        return {
+            "message": "These images have not been validated",
+            "data": {
+                "Image_code": [{
+                    "identifier": image.identifier,
+                    "score": image.score
+                }
+                    for image in validate_images
+                ],
+                "quantity": validate_images.count()
+            }
+        }
+
+    @staticmethod
+    def validate_image(identifier: str, is_validated: bool):
+        image_obj = ImagesModel.objects(identifier=identifier)
+        if image_obj == 0:
+            raise UserProcessError(
+                "This image does not exist",
+                404
+            )
+        image_obj = image_obj.get(identifier=identifier)
+        if image_obj.is_checked:
+            raise UserProcessError(
+                "This image was checked",
+                409
+            )
+        image_obj.is_checked = True
+        image_obj.is_validated = is_validated
+        image_obj.save()
+        Queryset.update_user_score(
+            user_id=image_obj.user_id,
+            score=-image_obj.score
+        )
+        return {
+            "message": "this image was checked successfully"
+        }
+
+    @staticmethod
+    def get_most_used_product():
+        product_obj: list = ImagesModel.objects()
+        if product_obj == 0:
+            raise UserProcessError(
+                "There are any product registered",
+                404
+            )
+        products = [product.product_name for product in product_obj]
+        products_dict = get_dict_from_list(products)
+        most_used_products = sort_dict(products_dict)[:6]
+        return {
+            "message": "These are the most used product",
+            "data": {
+                "Product": most_used_products
+            }
         }

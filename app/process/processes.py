@@ -49,6 +49,22 @@ def user_logout_process():
     )
 
 
+def image_quantity_user_process():
+    if session_manager.get_login_status():
+        user_id: str = session_manager.get_user_id()
+        count_images: int = Queryset.count_images_for_date(user_id)
+        return {
+            "message": f"You have {count_images} images uploaded in this day",
+            "data": {
+                "retries_qty": 5 - count_images
+            }
+        }
+    raise UserProcessError(
+        "The user is not login",
+        401
+    )
+
+
 def upload_file_process(file: object, product_name: str):
     if session_manager.get_login_status():
         score_response: float = process_images_services(file)
@@ -66,8 +82,9 @@ def upload_file_process(file: object, product_name: str):
         if score >= 80:
             is_checked = True
         user_id: str = session_manager.get_user_id()
-        count_images: bool = Queryset.count_images_for_date(user_id)
-        if count_images:
+        count_images: int = Queryset.count_images_for_date(user_id)
+
+        if count_images < 5:
             Queryset.register_image(
                 user_id,
                 product_name,
@@ -79,7 +96,6 @@ def upload_file_process(file: object, product_name: str):
                 score
             )
             return {
-
                 "data": {
                     "score": score,
                     "validate": is_checked
@@ -97,8 +113,7 @@ def upload_file_process(file: object, product_name: str):
 
 
 def show_registered_users_process():
-    if session_manager.get_login_status():
-        return Queryset.show_user()
+    return Queryset.show_user()
 
 
 def show_codes_process():
@@ -151,3 +166,15 @@ def show_user_score_process():
         "The user is not login",
         401
     )
+
+
+def show_no_validate_image_process():
+    return Queryset.show_no_validate_image()
+
+
+def validate_image_process(identifier: str, is_validated: bool):
+    return Queryset.validate_image(identifier, is_validated)
+
+
+def show_most_registered_products_process():
+    return Queryset.get_most_used_product()

@@ -10,6 +10,7 @@ from app.process.handlers import (
     delete_user_handler,
     edit_user_handler,
     claim_codes_handler,
+    image_quantity_user_handler,
     redeem_codes_handler,
     show_codes_handler,
     show_most_registered_products_handler,
@@ -18,7 +19,8 @@ from app.process.handlers import (
     show_user_score_handler,
     upload_file_handler,
     user_closed_session_handler,
-    user_login_handler
+    user_login_handler,
+    validate_image_handler
 )
 from app.process.serializers import (
     ResponseSerializer,
@@ -91,7 +93,30 @@ async def create_user(user: UserSerializer) -> dict:
         return JSONResponse(content=response, status_code=500)
 
 
-@router.put("/edit-user", tags=["owner"], response_model=ResponseSerializer)
+@router.post(
+    "/image-quantity-user",
+    tags=["promo"],
+    response_model=ResponseSerializer)
+async def image_quantity_user() -> dict:
+    try:
+        response = image_quantity_user_handler()
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
+
+
+@router.put("/edit-user", tags=["user"], response_model=ResponseSerializer)
 async def edit_user(
     user: UserSerializer,
     number_id: int
@@ -102,7 +127,7 @@ async def edit_user(
 
 @router.delete(
     "/delete-user/{delete_id}",
-    tags=["owner"],
+    tags=["user"],
     response_model=ResponseSerializer)
 async def delete_user(delete_id: int) -> dict:
     return delete_user_handler(delete_id)
@@ -146,7 +171,7 @@ async def upload_image(
 
 @router.get(
     "/users",
-    tags=["promo"],
+    tags=["campain"],
     response_model=ResponseSerializer)
 async def show_registered_users(api_key: str = Header(None)) -> dict:
     try:
@@ -246,14 +271,17 @@ async def show_user_score() -> dict:
         return JSONResponse(content=response, status_code=500)
 
 
-
 @router.get(
     "/show-no-validate-image",
     tags=["campain"],
     response_model=ResponseSerializer)
-async def show_no_validate_image() -> dict:
+async def show_no_validate_image(api_key: str = Header(None)) -> dict:
     try:
-
+        if API_KEY != api_key:
+            raise UserProcessError(
+                "User no authorized",
+                401
+            )
         response = show_no_validate_image_handler()
         return JSONResponse(content=response, status_code=200)
     except UserProcessError as ue:
@@ -319,6 +347,38 @@ async def redeem_codes(
                 401
             )
         response = redeem_codes_handler(code)
+        return JSONResponse(content=response, status_code=200)
+    except UserProcessError as ue:
+        logger.error(ue)
+        response = {
+            "error": ue.args[0]
+        }
+        return JSONResponse(
+            content=response,
+            status_code=ue.args[1]
+        )
+    except Exception as e:
+        logger.error(e)
+        response = {"error": str(e)}
+        return JSONResponse(content=response, status_code=500)
+
+
+@router.get(
+    "/validate-image/{identifier}",
+    tags=["campain"],
+    response_model=ResponseSerializer)
+async def validate_image(
+    identifier: str,
+    is_validated: bool,
+    api_key: str = Header(None)
+) -> dict:
+    try:
+        if API_KEY != api_key:
+            raise UserProcessError(
+                "User no authorized",
+                401
+            )
+        response = validate_image_handler(identifier, is_validated)
         return JSONResponse(content=response, status_code=200)
     except UserProcessError as ue:
         logger.error(ue)
